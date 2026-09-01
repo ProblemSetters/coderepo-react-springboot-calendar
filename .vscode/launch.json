@@ -1,0 +1,14 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug Calendar Spring Boot Backend",
+            "type": "java",
+            "request": "launch",
+            "mainClass": "com.calendar.CalendarApplication",
+            "projectName": "calendar-backend",
+            "cwd": "${workspaceFolder}/backend",
+            "console": "integratedTerminal"
+        }
+    ]
+}

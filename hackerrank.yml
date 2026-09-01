@@ -1,0 +1,17 @@
+version: 1.0
+configuration:
+  has_webserver: true
+  readonly_paths:
+    - backend/src/test/**
+    - backend/src/main/java/com/calendar/seed/**
+    - backend/src/main/resources/application.properties
+    - backend/build.gradle
+    - frontend/vite.config.js
+  ide_config:
+    default_open_files:
+      - backend/src/main/java/com/calendar/CalendarApplication.java
+      - frontend/src/App.jsx
+    project_menu:
+      run: bun start
+      install: bun install
+      test: echo "No test command configured"

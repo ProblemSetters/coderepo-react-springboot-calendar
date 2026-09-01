@@ -1,0 +1,17 @@
+node_modules/
+.bun-tmp/
+package-lock.json
+.mongodb/
+coverage/
+dist/
+build/
+.gradle/
+.env
+.env.local
+.seed-signature
+*.log
+.DS_Store
+output/*.xml
+
+CLAUDE.md
+.claude/

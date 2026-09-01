@@ -1,0 +1,22 @@
+{
+	"name": "calendar",
+	"version": "1.0.0",
+	"private": true,
+	"description": "Calendar Scheduling App - React and Spring Boot",
+	"workspaces": [
+		"frontend"
+	],
+	"scripts": {
+		"postinstall": "bash setup.sh --ensure-seeded",
+		"prestart": "bash setup.sh --start",
+		"start": "concurrently \"bun run dev:backend\" \"bun run dev:frontend\"",
+		"dev:frontend": "cd frontend && bun run dev",
+		"dev:backend": "cd backend && ./gradlew bootRun --quiet --console=plain",
+		"seed": "cd backend && ./gradlew seed --quiet --console=plain",
+		"clear": "rm -rf node_modules/ bun.lock .seed-signature backend/build backend/.gradle && cd frontend && rm -rf node_modules/ .env && cd ..",
+		"test:task1": "cd backend && ./gradlew task1Test --quiet --console=plain"
+	},
+	"devDependencies": {
+		"concurrently": "9.2.1"
+	}
+}
