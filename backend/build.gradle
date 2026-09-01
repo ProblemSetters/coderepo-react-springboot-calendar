@@ -52,6 +52,7 @@ tasks.register('task1Test', Test) {
 	reports.junitXml.outputLocation = file("${buildDir}/task1-results")
 	reports.html.required = false
 	ignoreFailures = true
+	outputs.upToDateWhen { false }
 	doLast {
 		outputDir.mkdirs()
 		def results = fileTree("${buildDir}/task1-results").matching { include '*.xml' }.files
