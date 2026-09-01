@@ -186,7 +186,7 @@ public class SeedRunner {
 		System.out.println("  Calendars: " + calendars);
 		System.out.println("  Events:    " + eventCount);
 		System.out.println();
-		System.out.println("Test Users:");
+		System.out.println("Demo accounts:");
 
 		for (Person profile : profiles) {
 			System.out.println("  Email: " + profile.getEmail() + " | Password: " + SeedData.DEMO_PASSWORD);

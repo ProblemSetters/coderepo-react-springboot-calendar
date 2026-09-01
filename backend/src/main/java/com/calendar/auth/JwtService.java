@@ -17,7 +17,7 @@ public class JwtService {
 
 	private static final String ISSUER = "calendar-api";
 
-	private static final String AUDIENCE = "calendar-assessment";
+	private static final String AUDIENCE = "calendar-app";
 
 	private static final int SECONDS_PER_HOUR = 3600;
 

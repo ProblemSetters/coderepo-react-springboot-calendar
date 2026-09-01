@@ -21,45 +21,14 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
 	implementation 'at.favre.lib:bcrypt:0.10.2'
 	implementation 'com.auth0:java-jwt:4.4.0'
-	testImplementation 'org.springframework.boot:spring-boot-starter-test'
-	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
 springBoot {
 	mainClass = 'com.calendar.CalendarApplication'
 }
 
-def outputDir = file("${rootDir}/../output")
-
-tasks.named('test') {
-	useJUnitPlatform()
-	enabled = false
-}
-
 tasks.withType(JavaExec).configureEach {
 	jvmArgs '--enable-native-access=ALL-UNNAMED'
-}
-
-tasks.withType(Test).configureEach {
-	jvmArgs '--enable-native-access=ALL-UNNAMED'
-}
-
-tasks.register('task1Test', Test) {
-	useJUnitPlatform()
-	testClassesDirs = sourceSets.test.output.classesDirs
-	classpath = sourceSets.test.runtimeClasspath
-	filter { includeTestsMatching 'com.calendar.task1.*' }
-	reports.junitXml.outputLocation = file("${buildDir}/task1-results")
-	reports.html.required = false
-	ignoreFailures = true
-	outputs.upToDateWhen { false }
-	doLast {
-		outputDir.mkdirs()
-		def results = fileTree("${buildDir}/task1-results").matching { include '*.xml' }.files
-		if (!results.isEmpty()) {
-			new File(outputDir, 'task1.xml').text = results.first().text
-		}
-	}
 }
 
 tasks.register('seed', JavaExec) {
