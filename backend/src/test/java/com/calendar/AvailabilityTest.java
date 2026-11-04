@@ -104,4 +104,32 @@ class AvailabilityTest extends ApiTestSupport {
 			assertThat(response.outcome()).isEqualTo(List.of(400, "VALIDATION_ERROR"));
 		}
 	}
+
+	@Test
+	@DisplayName("never suggests a time that has passed, and cuts an event that started earlier to the asked time")
+	void neverSuggestsATimeThatHasPassedAndCutsAnEventThatStartedEarlierToTheAskedTime() throws Exception {
+		jordanSession.post("/api/v1/events", eventBody(jordanPrimary, "title", "Workshop", "startAt",
+				"2030-06-03T09:00:00.000Z", "endAt", "2030-06-03T11:00:00.000Z"));
+
+		ApiResponse past = suggestions("from", "2020-06-01");
+		ApiResponse overlapping = conflictsFor("2030-06-03T10:30:00.000Z", "2030-06-03T11:30:00.000Z");
+		List<List<List<Object>>> cut = new ArrayList<>();
+
+		for (JsonNode conflict : overlapping.data().path("conflicts")) {
+			List<List<Object>> blocks = new ArrayList<>();
+
+			for (JsonNode block : conflict.path("busy")) {
+				blocks.add(List.of(block.path("title").asText(), block.path("startAt").asText(),
+						block.path("endAt").asText()));
+			}
+
+			cut.add(blocks);
+		}
+
+		assertThat(past.status()).isEqualTo(200);
+		assertThat(past.data().path("suggestions").size()).isEqualTo(0);
+		assertThat(overlapping.data().path("available").asBoolean(true)).isFalse();
+		assertThat(cut).isEqualTo(
+				List.of(List.of(List.of("Workshop", "2030-06-03T10:30:00.000Z", "2030-06-03T11:00:00.000Z"))));
+	}
 }

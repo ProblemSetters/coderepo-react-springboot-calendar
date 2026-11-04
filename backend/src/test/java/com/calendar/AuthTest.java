@@ -78,4 +78,18 @@ class AuthTest extends ApiTestSupport {
 		assertThat(session.data().path("account").path("email").asText()).isEqualTo(alex.getEmail());
 		assertThat(signedOut.status()).isEqualTo(204);
 	}
+
+	@Test
+	@DisplayName("stops accepting a token once the account loses that profile or is switched off")
+	void stopsAcceptingATokenOnceTheAccountLosesThatProfileOrIsSwitchedOff() throws Exception {
+		Session token = signIn(alex);
+
+		revokeProfileAccess(alex);
+		ApiResponse profileRevoked = token.get("/api/v1/calendars");
+		deactivateAccount(alex);
+		ApiResponse accountOff = token.get("/api/v1/calendars");
+
+		assertThat(profileRevoked.outcome()).isEqualTo(List.of(403, "PROFILE_FORBIDDEN"));
+		assertThat(accountOff.outcome()).isEqualTo(List.of(401, "ACCOUNT_UNAVAILABLE"));
+	}
 }

@@ -16,7 +16,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
@@ -204,6 +206,20 @@ public abstract class ApiTestSupport {
 				Map.of("email", person.getEmail(), "password", PASSWORD));
 
 		return response.data().path("token").asText();
+	}
+
+	// Change an account behind the app's back, the way an admin taking access away would.
+	protected void revokeProfileAccess(Person person) {
+		updateAccount(person, new Update().set("allowedProfileIds", List.of()));
+	}
+
+	protected void deactivateAccount(Person person) {
+		updateAccount(person, new Update().set("active", false));
+	}
+
+	private void updateAccount(Person person, Update update) {
+		mongoTemplate.updateFirst(Query.query(Criteria.where("email").is(person.getEmail())), update,
+				WorkspaceAccount.class);
 	}
 
 	// Signs in and picks the person's own profile, like the sign-in screen does.

@@ -2,12 +2,15 @@ package com.calendar;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import com.calendar.people.Person;
 import com.fasterxml.jackson.databind.JsonNode;
 
 class EventsTest extends ApiTestSupport {
@@ -124,6 +127,51 @@ class EventsTest extends ApiTestSupport {
 
 		assertThat(afterRename.data().path("responseStatus").asText()).isEqualTo("accepted");
 		assertThat(afterMove.data().path("responseStatus").asText()).isEqualTo("needsAction");
+	}
+
+	// The editor always sends the guest names and their ids together, so the test does the same.
+	private static Map<String, Object> guests(Person... people) {
+		return body("participants", Arrays.stream(people).map(Person::getName).toList(), "participantIds",
+				Arrays.stream(people).map(Person::getId).toList());
+	}
+
+	@Test
+	@DisplayName("keeps answers when a guest is added, shuts out a removed guest, and resets answers when the repeat rule changes")
+	void keepsAnswersWhenAGuestIsAddedShutsOutARemovedGuestAndResetsAnswersWhenTheRepeatRuleChanges() throws Exception {
+		Session taylorSession = signIn(taylor);
+		ApiResponse created = alexSession.post("/api/v1/events",
+				eventBody(alexWork, invitingJordan("recurrence", weekly())));
+		String path = "/api/v1/events/" + created.data().path("_id").asText();
+		jordanSession.patch(path + "/response", body("status", "accepted"));
+
+		ApiResponse added = alexSession.patch(path, guests(jordan, taylor));
+		taylorSession.patch(path + "/response", body("status", "accepted"));
+		ApiResponse removed = alexSession.patch(path, guests(taylor));
+		ApiResponse removedGuestOpens = jordanSession.get(path);
+		alexSession.patch(path, body("recurrence", weekly("daysOfWeek", List.of(1, 3))));
+		ApiResponse afterRuleChange = taylorSession.get(path);
+
+		assertThat(pairs(added.data().path("participantPeople"), "name", "responseStatus"))
+				.isEqualTo(List.of(List.of("Jordan Smith", "accepted"), List.of("Taylor Johnson", "needsAction")));
+		assertThat(pairs(removed.data().path("participantPeople"), "name", "responseStatus"))
+				.isEqualTo(List.of(List.of("Taylor Johnson", "accepted")));
+		assertThat(removedGuestOpens.status()).isEqualTo(404);
+		assertThat(afterRuleChange.data().path("responseStatus").asText()).isEqualTo("needsAction");
+	}
+
+	@Test
+	@DisplayName("refuses a guest id that is malformed, unknown or listed twice")
+	void refusesAGuestIdThatIsMalformedUnknownOrListedTwice() throws Exception {
+		ApiResponse malformed = alexSession.post("/api/v1/events",
+				eventBody(alexWork, "participantIds", List.of("not-an-id")));
+		ApiResponse unknown = alexSession.post("/api/v1/events",
+				eventBody(alexWork, "participantIds", List.of("0123456789abcdef01234567")));
+		ApiResponse twice = alexSession.post("/api/v1/events",
+				eventBody(alexWork, "participantIds", List.of(jordan.getId(), jordan.getId())));
+
+		assertThat(malformed.outcome()).isEqualTo(List.of(400, "VALIDATION_ERROR"));
+		assertThat(unknown.outcome()).isEqualTo(List.of(404, "PEOPLE_NOT_FOUND"));
+		assertThat(twice.outcome()).isEqualTo(List.of(400, "VALIDATION_ERROR"));
 	}
 
 	@Test

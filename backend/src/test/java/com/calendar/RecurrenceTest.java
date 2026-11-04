@@ -81,4 +81,19 @@ class RecurrenceTest {
 		assertThat(startsOf(series, "2030-03-01T00:00:00.000Z", "2030-03-15T00:00:00.000Z"))
 				.isEqualTo(instants("2030-03-04T14:00:00.000Z", "2030-03-11T13:00:00.000Z"));
 	}
+
+	@Test
+	@DisplayName("a yearly repeat lands on the same date each year and an every-other-day repeat skips a day")
+	void aYearlyRepeatLandsOnTheSameDateEachYearAndAnEveryOtherDayRepeatSkipsADay() {
+		Event yearly = repeating("2030-06-03T10:00:00.000Z", "2030-06-03T11:00:00.000Z",
+				recurrence("yearly", "never", "UTC"));
+		Recurrence everyOther = recurrence("daily", "never", "UTC");
+		everyOther.setInterval(2);
+		Event everyOtherDay = repeating("2030-06-03T10:00:00.000Z", "2030-06-03T10:30:00.000Z", everyOther);
+
+		assertThat(startsOf(yearly, "2030-01-01T00:00:00.000Z", "2033-01-01T00:00:00.000Z"))
+				.isEqualTo(instants("2030-06-03T10:00:00.000Z", "2031-06-03T10:00:00.000Z", "2032-06-03T10:00:00.000Z"));
+		assertThat(startsOf(everyOtherDay, "2030-06-01T00:00:00.000Z", "2030-06-09T00:00:00.000Z"))
+				.isEqualTo(instants("2030-06-03T10:00:00.000Z", "2030-06-05T10:00:00.000Z", "2030-06-07T10:00:00.000Z"));
+	}
 }
