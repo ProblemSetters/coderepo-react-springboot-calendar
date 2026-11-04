@@ -30,7 +30,6 @@
 │   ├── src/features/            # Product views and interactions
 │   ├── src/shared/              # API client, reusable controls, and utilities
 │   └── public/                  # Local static media
-├── scripts/run-tests.cjs        # Run Tests runner that writes the scored results files
 ├── .vscode/launch.json          # Spring Boot debugger configuration
 ├── hackerrank.yml               # HackerRank install, run, test and scoring configuration
 └── setup.sh                     # Backend, MongoDB, and seed setup
@@ -93,10 +92,10 @@ The frontend runs on port `3000`, the API runs on port `8000`, and health is ava
 | `bun run seed` | Restores the deterministic MongoDB baseline through Gradle. |
 | `bun run dev:backend` | Starts only the Spring Boot API on port `8000`. |
 | `bun run dev:frontend` | Starts only Vite on port `3000`. |
-| `bun run test` | Runs the backend and frontend tests and writes `output/backend.xml` and `output/frontend.xml`. |
+| `bun run test` | Runs the backend and frontend tests and writes all results to `output/junit.xml`. |
 | `bun run test:backend` | Runs only the backend tests (JUnit through Gradle). |
 | `bun run test:frontend` | Runs only the frontend tests (Vitest). |
 
 HackerRank installs the application with `bun install && bash setup.sh --seed`, runs it with `bun start`, and runs the tests with `bun run test`.
 
-The backend tests need MongoDB, which Install and Run start. They never touch the app's own data: each run uses its own `calendar_db_test_<id>` database and drops it when it ends. Only `bun run test` writes the results files; `test:backend` and `test:frontend` print their results only.
+The backend tests need MongoDB, which Install and Run start. They never touch the app's own data: each run uses its own `calendar_db_test_<id>` database and drops it when it ends. Only `bun run test` writes `output/junit.xml`; `test:backend` and `test:frontend` print their results only.

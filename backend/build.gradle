@@ -8,20 +8,16 @@ group = 'com.calendar'
 version = '1.0.0'
 
 def isScoringBuild = providers.gradleProperty('scoring').isPresent()
-// Only Run Tests (scripts/run-tests.cjs) names a results file; it renames it into output/ when the run ends.
+// bun run test points this at .cache/junit/backend.xml and merges it into output/junit.xml.
 def scoringReportFile = file(System.getenv('JUNIT_REPORT_FILE') ?: 'build/scoring/backend-junit.xml')
 
+// -Pscoring (bun run test:backend) builds into build/scoring with its own Gradle cache, so the tests
+// can run while the app's own Gradle (bun start) is running.
 if (isScoringBuild) {
 	if (gradle.startParameter.projectCacheDir == null) {
-		throw new GradleException('Run Tests needs its own Gradle cache: add --project-cache-dir ../.cache/gradle-scoring')
+		throw new GradleException('The test build needs its own Gradle cache: add --project-cache-dir ../.cache/gradle-scoring')
 	}
 	layout.buildDirectory = file('build/scoring')
-}
-
-// Run Tests leaves out test files that do not compile on this code, so the others still run and count.
-def skippedTestSources = providers.gradleProperty('skipTestSources').getOrElse('')
-if (skippedTestSources) {
-	sourceSets.test.java.exclude(skippedTestSources.split(',') as List)
 }
 
 java {
@@ -59,8 +55,6 @@ tasks.register('seed', JavaExec) {
 tasks.named('test') {
 	useJUnitPlatform()
 	jvmArgs '-Xshare:off'
-	// TestRunSetup picks the test database: one for Run Tests, and one per run for every other run.
-	systemProperty 'app.test.scoring', isScoringBuild
 	if (isScoringBuild) {
 		// A test class left out of this run, or deleted since the last one, must not keep its old results.
 		def junitXmlDir = reports.junitXml.outputLocation

@@ -17,9 +17,9 @@ import com.mongodb.MongoClientSettings;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 
-// Runs once per test run, before Spring starts. Run Tests uses <db>_test_scoring and empties it first. Every other
-// test run gets its own database, <db>_test_<pid>, dropped when the run ends, so two runs never share data. A
-// database left by a run that was killed is dropped at the start of the next run.
+// Runs once per test run, before Spring starts. Every test run gets its own database, <db>_test_<pid>,
+// dropped when the run ends, so two runs never share data. A database left by a run that was killed is
+// dropped at the start of the next run.
 public class TestRunSetup implements LauncherSessionListener {
 
 	private static final String DEFAULT_URI = "mongodb://localhost:27017/calendar_db";
@@ -30,15 +30,11 @@ public class TestRunSetup implements LauncherSessionListener {
 
 	private static final String URI_PROPERTY = "spring.data.mongodb.uri";
 
-	private static final String SCORING_SUFFIX = "_test_scoring";
-
 	private static final String RUN_SUFFIX = "_test_";
 
 	private static final Pattern URI_PARTS = Pattern.compile("^(mongodb(?:\\+srv)?://[^/?]*)/?([^?]*)(\\?.*)?$");
 
 	private static final long SERVER_SELECTION_TIMEOUT_SECONDS = 5;
-
-	private final boolean isScoringRun = Boolean.getBoolean("app.test.scoring");
 
 	private final long pid = ProcessHandle.current().pid();
 
@@ -58,14 +54,10 @@ public class TestRunSetup implements LauncherSessionListener {
 		}
 
 		appDatabase = parts.group(2).isEmpty() ? DEFAULT_DATABASE : parts.group(2);
-		runDatabase = appDatabase + (isScoringRun ? SCORING_SUFFIX : RUN_SUFFIX + pid);
+		runDatabase = appDatabase + RUN_SUFFIX + pid;
 		String query = parts.group(3) == null ? "" : parts.group(3);
 		System.setProperty(URI_PROPERTY, parts.group(1) + "/" + runDatabase + query);
 		withClient(appUri, client -> {
-			if (isScoringRun) {
-				client.getDatabase(runDatabase).drop();
-			}
-
 			for (String name : client.listDatabaseNames()) {
 				if (isDeadRunDatabase(name)) {
 					client.getDatabase(name).drop();
@@ -76,7 +68,7 @@ public class TestRunSetup implements LauncherSessionListener {
 
 	@Override
 	public void launcherSessionClosed(LauncherSession session) {
-		if (!isScoringRun && runDatabase != null && runDatabase.contains(RUN_SUFFIX)) {
+		if (runDatabase != null && runDatabase.contains(RUN_SUFFIX)) {
 			withClient(mongoUri(), client -> client.getDatabase(runDatabase).drop());
 		}
 	}
