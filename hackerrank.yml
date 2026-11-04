@@ -1,10 +1,21 @@
 version: 1.0
 configuration:
   has_webserver: true
+  scoring:
+    command: rm -f output/backend.xml output/frontend.xml && bun install && bash setup.sh --seed && bun run test
+    files:
+      - output/backend.xml
+      - output/frontend.xml
   readonly_paths:
+    - hackerrank.yml
+    - setup.sh
+    - scripts/**
+    - backend/src/test/**
+    - backend/build.gradle
     - backend/src/main/java/com/calendar/seed/**
     - backend/src/main/resources/application.properties
-    - backend/build.gradle
+    - frontend/src/__tests__/**
+    - frontend/vitest.config.js
     - frontend/vite.config.js
   ide_config:
     default_open_files:
@@ -13,3 +24,12 @@ configuration:
     project_menu:
       run: bun start
       install: bun install && bash setup.sh --seed
+      test: rm -f output/backend.xml output/frontend.xml && bun run test
+    ports_settings:
+      "3000":
+        name: Frontend
+        hidePreview: false
+        primary: true
+      "8000":
+        name: Backend
+        hidePreview: true

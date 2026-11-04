@@ -7,21 +7,26 @@ import java.util.List;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.mongodb.core.index.CompoundIndex;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 import org.springframework.data.mongodb.core.mapping.FieldType;
 
 @Document(collection = "events")
+@CompoundIndex(name = "calendarId_1_startAt_1_endAt_1", def = "{'calendarId': 1, 'startAt': 1, 'endAt': 1}")
 public class Event {
 
 	@Id
 	private String id;
 
+	@Indexed(name = "calendarId_1")
 	@Field(targetType = FieldType.OBJECT_ID)
 	private String calendarId;
 
 	private String title;
 
+	@Indexed(name = "type_1")
 	private String type = "event";
 
 	private String description = "";
@@ -41,8 +46,10 @@ public class Event {
 
 	private List<RecurrenceResponseOverride> recurrenceResponseOverrides = new ArrayList<>();
 
+	@Indexed(name = "startAt_1")
 	private Instant startAt;
 
+	@Indexed(name = "endAt_1")
 	private Instant endAt;
 
 	private boolean allDay;

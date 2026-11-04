@@ -9,6 +9,7 @@ import java.util.Map;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import com.calendar.shared.Dates;
@@ -19,12 +20,15 @@ public class Person {
 	@Id
 	private String id;
 
+	@Indexed(name = "name_1")
 	private String name;
 
+	@Indexed(name = "email_1", unique = true)
 	private String email;
 
 	private String avatarColor;
 
+	@Indexed(name = "isProfile_1")
 	private boolean isProfile;
 
 	private String headline = "";

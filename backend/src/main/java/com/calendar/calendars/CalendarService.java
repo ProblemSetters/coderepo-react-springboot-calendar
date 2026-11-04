@@ -4,6 +4,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 
 import com.calendar.events.EventRepository;
@@ -57,7 +58,13 @@ public class CalendarService {
 		calendar.setVisible(true);
 		calendar.setPrimary(false);
 
-		return calendarRepository.create(calendar);
+		// Two requests can pass the name check at the same moment; the unique index then refuses the
+		// second one, and that is the same conflict.
+		try {
+			return calendarRepository.create(calendar);
+		} catch (DuplicateKeyException exception) {
+			throw new ApiException(CONFLICT, CONFLICT_CODE, CONFLICT_MESSAGE);
+		}
 	}
 
 	public Calendar update(String id, Map<String, Object> input, String ownerId) {
@@ -69,7 +76,13 @@ public class CalendarService {
 
 		requireCalendar(id, ownerId);
 
-		Calendar calendar = calendarRepository.update(id, new LinkedHashMap<>(input));
+		Calendar calendar;
+
+		try {
+			calendar = calendarRepository.update(id, new LinkedHashMap<>(input));
+		} catch (DuplicateKeyException exception) {
+			throw new ApiException(CONFLICT, CONFLICT_CODE, CONFLICT_MESSAGE);
+		}
 
 		if (calendar == null) {
 			throw notFound();
