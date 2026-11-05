@@ -23,13 +23,15 @@
 ├── backend/                     # Spring Boot API, business logic, and MongoDB persistence
 │   ├── src/main/java/           # Product domains and application code
 │   ├── src/main/resources/      # Application configuration and local media
+│   ├── src/test/java/           # JUnit API and logic tests
 │   └── gradle/wrapper/          # Pinned Gradle wrapper runtime
 ├── frontend/
+│   ├── src/__tests__/           # Vitest component tests
 │   ├── src/features/            # Product views and interactions
 │   ├── src/shared/              # API client, reusable controls, and utilities
 │   └── public/                  # Local static media
 ├── .vscode/launch.json          # Spring Boot debugger configuration
-├── hackerrank.yml               # HackerRank install and run configuration
+├── hackerrank.yml               # HackerRank install, run, test and scoring configuration
 └── setup.sh                     # Backend, MongoDB, and seed setup
 ```
 
@@ -90,5 +92,10 @@ The frontend runs on port `3000`, the API runs on port `8000`, and health is ava
 | `bun run seed` | Restores the deterministic MongoDB baseline through Gradle. |
 | `bun run dev:backend` | Starts only the Spring Boot API on port `8000`. |
 | `bun run dev:frontend` | Starts only Vite on port `3000`. |
+| `bun run test` | Runs the backend and frontend tests and writes all results to `output/junit.xml`. |
+| `bun run test:backend` | Runs only the backend tests (JUnit through Gradle). |
+| `bun run test:frontend` | Runs only the frontend tests (Vitest). |
 
-HackerRank installs the application with `bun install && bash setup.sh --seed` and runs it with `bun start`.
+HackerRank installs the application with `bun install && bash setup.sh --seed`, runs it with `bun start`, and runs the tests with `bun run test`.
+
+The backend tests need MongoDB, which Install and Run start. They never touch the app's own data: they use a separate `calendar_db_test` database, emptied before every test. `bun run test` merges the backend and frontend results into `output/junit.xml`.

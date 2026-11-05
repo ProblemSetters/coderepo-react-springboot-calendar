@@ -8,6 +8,8 @@ build/
 .env
 .env.local
 *.log
+output/
+.cache/
 .DS_Store
 
 CLAUDE.md

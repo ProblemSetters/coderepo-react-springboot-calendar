@@ -11,9 +11,13 @@
 		"start": "concurrently \"bun run dev:backend\" \"bun run dev:frontend\"",
 		"dev:frontend": "cd frontend && bun run dev",
 		"dev:backend": "cd backend && ./gradlew bootRun --quiet --console=plain",
-		"seed": "cd backend && ./gradlew seed --quiet --console=plain"
+		"seed": "cd backend && ./gradlew seed --quiet --console=plain",
+		"test": "rm -rf output .cache/junit; bun run test:backend; backend=$?; bun run test:frontend; frontend=$?; mkdir -p output && jrm output/junit.xml '.cache/junit/**/*.xml' || exit 1; exit $((backend || frontend))",
+		"test:backend": "cd backend && ./gradlew test --console=plain",
+		"test:frontend": "cd frontend && bun run test"
 	},
 	"devDependencies": {
-		"concurrently": "9.2.1"
+		"concurrently": "9.2.1",
+		"junit-report-merger": "9.0.4"
 	}
 }

@@ -21,6 +21,8 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
 	implementation 'at.favre.lib:bcrypt:0.10.2'
 	implementation 'com.auth0:java-jwt:4.4.0'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.11.4'
 }
 
 springBoot {
@@ -35,4 +37,11 @@ tasks.register('seed', JavaExec) {
 	group = 'application'
 	classpath = sourceSets.main.runtimeClasspath
 	mainClass = 'com.calendar.seed.SeedRunner'
+}
+
+tasks.named('test') {
+	useJUnitPlatform()
+	jvmArgs '-Xshare:off'
+	// bun run test merges these results into output/junit.xml.
+	reports.junitXml.outputLocation = file('../.cache/junit/backend')
 }

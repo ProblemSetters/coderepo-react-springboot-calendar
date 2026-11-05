@@ -7,6 +7,8 @@ import java.util.Map;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.mongodb.core.index.CompoundIndex;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 import org.springframework.data.mongodb.core.mapping.FieldType;
@@ -14,11 +16,14 @@ import org.springframework.data.mongodb.core.mapping.FieldType;
 import com.calendar.shared.Dates;
 
 @Document(collection = "calendars")
+@CompoundIndex(name = "ownerId_1_name_1", def = "{'ownerId': 1, 'name': 1}", unique = true,
+		collation = "{'locale': 'en', 'strength': 2}")
 public class Calendar {
 
 	@Id
 	private String id;
 
+	@Indexed(name = "ownerId_1")
 	@Field(targetType = FieldType.OBJECT_ID)
 	private String ownerId;
 
