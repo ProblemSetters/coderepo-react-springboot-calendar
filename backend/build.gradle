@@ -7,19 +7,6 @@ plugins {
 group = 'com.calendar'
 version = '1.0.0'
 
-def isScoringBuild = providers.gradleProperty('scoring').isPresent()
-// bun run test points this at .cache/junit/backend.xml and merges it into output/junit.xml.
-def scoringReportFile = file(System.getenv('JUNIT_REPORT_FILE') ?: 'build/scoring/backend-junit.xml')
-
-// -Pscoring (bun run test:backend) builds into build/scoring with its own Gradle cache, so the tests
-// can run while the app's own Gradle (bun start) is running.
-if (isScoringBuild) {
-	if (gradle.startParameter.projectCacheDir == null) {
-		throw new GradleException('The test build needs its own Gradle cache: add --project-cache-dir ../.cache/gradle-scoring')
-	}
-	layout.buildDirectory = file('build/scoring')
-}
-
 java {
 	sourceCompatibility = JavaVersion.VERSION_21
 	targetCompatibility = JavaVersion.VERSION_21
@@ -35,7 +22,7 @@ dependencies {
 	implementation 'at.favre.lib:bcrypt:0.10.2'
 	implementation 'com.auth0:java-jwt:4.4.0'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
-	testImplementation 'org.junit.platform:junit-platform-launcher:1.11.4'
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.11.4'
 }
 
 springBoot {
@@ -55,25 +42,6 @@ tasks.register('seed', JavaExec) {
 tasks.named('test') {
 	useJUnitPlatform()
 	jvmArgs '-Xshare:off'
-	if (isScoringBuild) {
-		// A test class left out of this run, or deleted since the last one, must not keep its old results.
-		def junitXmlDir = reports.junitXml.outputLocation
-		doFirst { junitXmlDir.get().asFile.deleteDir() }
-		finalizedBy 'scoringReport'
-	}
-}
-
-tasks.register('scoringReport') {
-	def resultsDir = layout.buildDirectory.dir('test-results/test')
-	doLast {
-		def suites = resultsDir.get().asFile.listFiles({ it.name ==~ /TEST-.*\.xml/ } as FileFilter) ?: []
-		// HRW keys a testcase by its name alone, and two classes can share a method name, so the name carries the class.
-		def bodies = suites.sort { it.name }.collect {
-			it.text.replaceFirst(/<\?xml[^>]*\?>\s*/, '').replaceAll(/<testcase name="([^"]*)" classname="([^"]*)"/) { all, name, classname ->
-				"<testcase name=\"${classname.tokenize('.').last()}.${name}\" classname=\"${classname}\""
-			}
-		}
-		scoringReportFile.parentFile.mkdirs()
-		scoringReportFile.text = (['<?xml version="1.0" encoding="UTF-8"?>', '<testsuites>'] + bodies + ['</testsuites>']).join('\n') + '\n'
-	}
+	// bun run test merges these results into output/junit.xml.
+	reports.junitXml.outputLocation = file('../.cache/junit/backend')
 }

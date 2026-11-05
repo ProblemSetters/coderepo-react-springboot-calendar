@@ -35,7 +35,8 @@ import com.fasterxml.jackson.databind.node.MissingNode;
 
 import at.favre.lib.crypto.bcrypt.BCrypt;
 
-@SpringBootTest
+// The tests use their own database, so the app's own data is never touched.
+@SpringBootTest(properties = "spring.data.mongodb.database=calendar_db_test")
 @AutoConfigureMockMvc
 public abstract class ApiTestSupport {
 

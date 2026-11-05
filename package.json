@@ -12,8 +12,8 @@
 		"dev:frontend": "cd frontend && bun run dev",
 		"dev:backend": "cd backend && ./gradlew bootRun --quiet --console=plain",
 		"seed": "cd backend && ./gradlew seed --quiet --console=plain",
-		"test": "rm -rf output .cache/junit; JUNIT_REPORT_FILE=$PWD/.cache/junit/backend.xml bun run test:backend; backend=$?; [ -s .cache/junit/backend.xml ] || { echo \"Backend tests ended without writing results.\"; backend=1; }; VITEST_JUNIT_FILE=$PWD/.cache/junit/frontend.xml bun run test:frontend; frontend=$?; [ -s .cache/junit/frontend.xml ] || { echo \"Frontend tests ended without writing results.\"; frontend=1; }; mkdir -p output && jrm output/junit.xml '.cache/junit/*.xml'; merged=$?; exit $((backend || frontend || merged))",
-		"test:backend": "cd backend && ./gradlew test -Pscoring --project-cache-dir ../.cache/gradle-scoring --console=plain",
+		"test": "rm -rf output .cache/junit; bun run test:backend; backend=$?; bun run test:frontend; frontend=$?; mkdir -p output && jrm output/junit.xml '.cache/junit/**/*.xml' || exit 1; exit $((backend || frontend))",
+		"test:backend": "cd backend && ./gradlew test --console=plain",
 		"test:frontend": "cd frontend && bun run test"
 	},
 	"devDependencies": {
